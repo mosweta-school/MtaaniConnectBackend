@@ -1,0 +1,129 @@
+{
+  "users": [
+    {
+      "id": "XCJ7rEmLsA4",
+      "name": "deo",
+      "email": "deo@gmail.com",
+      "password": "$2b$10$vk9yniVvCp2UCmHVbRmN0upkenUpx83r3aj.R43uUBIy9F61DwrdO",
+      "role": "user"
+    },
+    {
+      "id": "MFm1mLnKDsA",
+      "name": "jane",
+      "email": "jane@gmail.com",
+      "password": "$2b$10$D42dMYo8ZtDtjpAha8g9tuWCcvXk9N/pGvyFAA/UIHVvoGC4iuib.",
+      "role": "admin"
+    },
+    {
+      "id": "OxzfeAOeHLI",
+      "name": "Obama",
+      "email": "obama360@gmail.com",
+      "password": "$2b$10$y4pDOg1lrYjulgjh6czN.uWeXU2ihuPkHTsEMLuZ85GcqevgfkuLK",
+      "role": "user"
+    },
+    {
+      "id": "OGpHLOuuUDs",
+      "name": "deo",
+      "email": "shinikizua@gmail.com",
+      "password": "$2b$10$7eftfVvdKJ2RkUnthwwpFOmKcxwNXRW.BHj5vT4HYicIXwWbSQB1u",
+      "role": "admin"
+    },
+    {
+      "id": "uZzUyJ_2dnA",
+      "name": "David Kamau",
+      "email": "david@gmail.com",
+      "password": "$2b$10$.HBbScKuBSdgog/.Po0p/.X9hEFF6Mqia3YHF7hqVWFReDIsO15Cy",
+      "role": "user"
+    },
+    {
+      "id": "jeWzqMFEDRg",
+      "name": "Brian Mutai",
+      "email": "brian@gmail.com",
+      "password": "$2b$10$Il8/J.YBcNLmReQEpn4JTODqzH1/l521IQBhWGCN/WfV/mjCxoBHG",
+      "role": "user"
+    }
+  ],
+  "events": [
+    {
+      "title": "Nairobi Tech Fair",
+      "category": "tech",
+      "description": "All about technology",
+      "date": "2026-05-13",
+      "time": "15:00",
+      "location": "Lavington",
+      "maxAttendees": "50",
+      "id": "7xBRRJKMA9o"
+    },
+    {
+      "title": "Mtaani Connect Open Day",
+      "category": "tech",
+      "description": "This is a nice event where people interested in learning more about mtaani connect meet.",
+      "date": "2026-05-25",
+      "time": "02:40",
+      "locationName": "Nyayo Estate Embakasi",
+      "createdBy": "XCJ7rEmLsA4",
+      "organizerName": "deo",
+      "latitude": -1.3057450470113228,
+      "longitude": 36.90386701261758,
+      "maxAttendees": "100",
+      "id": "eiSFWxE_6q4"
+    },
+    {
+      "title": "Nina's day out",
+      "category": "music",
+      "description": "sherehe bila hasira",
+      "date": "2026-05-15",
+      "time": "09:00",
+      "locationName": "Quiver Kilimani",
+      "createdBy": "XCJ7rEmLsA4",
+      "organizerName": "deo",
+      "latitude": -1.3000372472783195,
+      "longitude": 36.784664806731165,
+      "maxAttendees": "10",
+      "id": "23pYKl7nAUM"
+    },
+    {
+      "title": "sports tournament",
+      "category": "sports",
+      "description": "An annual event where football enthusiasts meet to watch entertaining local teams play.",
+      "date": "2026-05-15",
+      "time": "09:30",
+      "locationName": "Pipeline Stadium",
+      "createdBy": "XCJ7rEmLsA4",
+      "organizerName": "deo",
+      "latitude": -1.3188329925609479,
+      "longitude": 36.8893078782159,
+      "maxAttendees": "179",
+      "id": "o8g-aLOWGeQ"
+    },
+    {
+      "title": "Mukami's Birthday",
+      "category": "music",
+      "description": "A nice birthday party event filled with lots of music and fun",
+      "date": "2026-06-13",
+      "time": "12:00",
+      "locationName": "Kileleshwa",
+      "createdBy": "XCJ7rEmLsA4",
+      "organizerName": "deo",
+      "latitude": -1.2757534502632868,
+      "longitude": 36.78167050777162,
+      "maxAttendees": "100",
+      "id": "ywZhhTaumUA"
+    },
+    {
+      "title": "Arsenal Watch Party",
+      "category": "sports",
+      "description": "An event where arsenal fans will meet to watch the champion's league final against PSG",
+      "date": "2026-05-30",
+      "time": "19:00",
+      "locationName": "Paris Lounge",
+      "createdBy": "jeWzqMFEDRg",
+      "organizerName": "Brian Mutai",
+      "latitude": -1.258834638548659,
+      "longitude": 36.849106466568365,
+      "maxAttendees": 0,
+      "id": "hURubEJUQ68"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
