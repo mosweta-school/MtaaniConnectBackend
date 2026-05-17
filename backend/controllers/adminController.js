@@ -1,65 +1,96 @@
-// Handles what happens when requests come in.
-//Handles admin related requests such as viewing all users, deleting users, and managing events and analytics
-const BASE_URL = 'http://localhost:8000'
-export const getAllUsers = async (req, res) => {
-  try {
-    const response = await fetch(`${BASE_URL}/users`);
-    const users = await response.json();
+// controllers/adminController.js
 
-    res.json(users);
+import { readDB, writeDB } from "../utils/db.js";
+
+
+// ======================================================
+// GET ALL USERS
+// ======================================================
+export const getAllUsers = (req, res) => {
+  try {
+    const db = readDB();
+    res.json(db.users || []);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Failed to load users" });
   }
 };
-export const getAllEvents = async (req, res) => {
-  try {
-    const response = await fetch(`${BASE_URL}/events`);
-    const events = await response.json();
 
-    res.json(events);
+
+// ======================================================
+// GET ALL EVENTS
+// ======================================================
+export const getAllEvents = (req, res) => {
+  try {
+    const db = readDB();
+    res.json(db.events || []);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Failed to load events" });
   }
 };
-export const deleteUser = async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    await fetch(`${BASE_URL}/users/${id}`, {
-      method: "DELETE",
-    });
+
+// ======================================================
+// DELETE USER
+// ======================================================
+export const deleteUser = (req, res) => {
+  try {
+    const db = readDB();
+
+    db.users = db.users.filter(
+      (user) => String(user.id) !== String(req.params.id)
+    );
+
+    // also remove their events (optional but good practice)
+    db.events = db.events.filter(
+      (event) => String(event.createdBy) !== String(req.params.id)
+    );
+
+    writeDB(db);
 
     res.json({ message: "User deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Failed to delete user" });
   }
 };
-export const deleteEvent = async (req, res) => {
-  try {
-    const { id } = req.params;
 
-    await fetch(`${BASE_URL}/events/${id}`, {
-      method: "DELETE",
-    });
+
+// ======================================================
+// DELETE EVENT
+// ======================================================
+export const deleteEvent = (req, res) => {
+  try {
+    const db = readDB();
+
+    db.events = db.events.filter(
+      (event) => String(event.id) !== String(req.params.id)
+    );
+
+    writeDB(db);
 
     res.json({ message: "Event deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Failed to delete event" });
   }
 };
-export const getAdminStats = async (req, res) => {
+
+
+// ======================================================
+// ADMIN ANALYTICS DASHBOARD
+// ======================================================
+export const getAdminStats = (req, res) => {
   try {
-    const usersRes = await fetch(`${BASE_URL}/users`);
-    const eventsRes = await fetch(`${BASE_URL}/events`);
+    const db = readDB();
 
-    const users = await usersRes.json();
-    const events = await eventsRes.json();
+    const users = db.users || [];
+    const events = db.events || [];
 
-    // Category breakdown
+    // ---------------------------
+    // CATEGORY ANALYTICS
+    // ---------------------------
     const categoryMap = {};
 
     events.forEach((event) => {
-      const category = event.category || "unknown";
+      const category = event.category || "Unknown";
       categoryMap[category] = (categoryMap[category] || 0) + 1;
     });
 
@@ -67,14 +98,41 @@ export const getAdminStats = async (req, res) => {
       ([name, value]) => ({ name, value })
     );
 
-    // Recent events
-    const recentEvents = events.slice(-5).reverse();
+    // ---------------------------
+    // LOCATION ANALYTICS
+    // ---------------------------
+    const locationMap = {};
 
-    // Upcoming events
+    events.forEach((event) => {
+      const location = event.locationName || "Unknown";
+      locationMap[location] = (locationMap[location] || 0) + 1;
+    });
+
+    const activeLocations = Object.entries(locationMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 5);
+
+    // ---------------------------
+    // UPCOMING EVENTS
+    // ---------------------------
     const upcomingEvents = events.filter(
-      (e) => new Date(e.date) > new Date()
+      (event) => new Date(event.date) > new Date()
     );
 
+    // ---------------------------
+    // RECENT EVENTS
+    // ---------------------------
+    const recentEvents = [...events]
+      .sort((a, b) =>
+        new Date(b.createdAt || b.date) -
+        new Date(a.createdAt || a.date)
+      )
+      .slice(0, 5);
+
+    // ---------------------------
+    // RESPONSE
+    // ---------------------------
     res.json({
       totalUsers: users.length,
       totalEvents: events.length,
@@ -83,16 +141,20 @@ export const getAdminStats = async (req, res) => {
       analytics: {
         categories,
         users: [
-          { name: "Total Users", value: users.length },
+          {
+            name: "Registered Users",
+            value: users.length,
+          },
         ],
+        activeLocations,
       },
 
       recentEvents,
     });
+
   } catch (error) {
     res.status(500).json({
-      message: "Failed to load admin stats",
-      error: error.message,
+      message: "Failed to generate admin stats",
     });
   }
 };

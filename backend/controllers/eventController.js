@@ -1,140 +1,272 @@
+import { readDB, writeDB } from "../utils/db.js";
 
-import axios from "axios";
-
-const EVENTS_API = "http://localhost:8000/events";
-
-
+// ======================================================
 // CREATE EVENT
-export const createEvent = async (req, res) => {
-
+// ======================================================
+export const createEvent = (req, res) => {
   try {
+    const {
+      title,
+      category,
+      description,
+      date,
+      time,
+      locationName,
+      latitude,
+      longitude,
+      maxAttendees,
+      createdBy,
+      organizerName,
+    } = req.body;
 
-    const eventData = req.body;
+    if (!title || !category || !description || !date || !time || !locationName) {
+      return res.status(400).json({
+        message: "Please fill all required fields",
+      });
+    }
 
-    const response = await axios.post(
-      EVENTS_API,
-      eventData
-    );
+    const db = readDB();
 
-    res.status(201).json({
+    const newEvent = {
+      id: Date.now().toString(),
+      title,
+      category,
+      description,
+      date,
+      time,
+      locationName,
+      latitude,
+      longitude,
+      maxAttendees: maxAttendees || 0,
+      createdBy,
+      organizerName,
+      attendees: [],
+      createdAt: new Date().toISOString(),
+    };
+
+    db.events.push(newEvent);
+    writeDB(db);
+
+    return res.status(201).json({
       message: "Event created successfully",
-      event: response.data,
+      event: newEvent,
     });
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: "Failed to create event",
-      error: error.message,
-    });
-
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
 };
 
-
+// ======================================================
 // GET ALL EVENTS
-export const getEvents = async (req, res) => {
-
+// ======================================================
+export const getEvents = (req, res) => {
   try {
-
-    const response = await axios.get(EVENTS_API);
-
-    res.status(200).json({
-      events: response.data,
-    });
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: "Failed to fetch events",
-      error: error.message,
-    });
-
+    const db = readDB();
+    return res.json({ events: db.events });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
 };
 
+// ======================================================
+// GET SINGLE EVENT
+// ======================================================
+export const getSingleEvent = (req, res) => {
+  try {
+    const db = readDB();
+    const event = db.events.find((e) => e.id === req.params.id);
 
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    return res.json(event);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+// ======================================================
 // UPDATE EVENT
-export const updateEvent = async (req, res) => {
-
+// ======================================================
+export const updateEvent = (req, res) => {
   try {
+    const db = readDB();
 
-    const { id } = req.params;
+    const index = db.events.findIndex((e) => e.id === req.params.id);
 
-    const updatedData = req.body;
+    if (index === -1) {
+      return res.status(404).json({ message: "Event not found" });
+    }
 
-    const response = await axios.put(
-      `${EVENTS_API}/${id}`,
-      updatedData
-    );
+    const event = db.events[index];
 
-    res.status(200).json({
+    if (String(event.createdBy) !== String(req.body.userId)) {
+      return res.status(403).json({
+        message: "You can only edit your own events",
+      });
+    }
+
+    db.events[index] = {
+      ...event,
+      ...req.body,
+    };
+
+    writeDB(db);
+
+    return res.json({
       message: "Event updated successfully",
-      event: response.data,
+      event: db.events[index],
     });
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: "Failed to update event",
-      error: error.message,
-    });
-
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
 };
 
-
+// ======================================================
 // DELETE EVENT
-export const deleteEvent = async (req, res) => {
-
+// ======================================================
+export const deleteEvent = (req, res) => {
   try {
+    const db = readDB();
 
-    const { id } = req.params;
+    const event = db.events.find((e) => e.id === req.params.id);
 
-    await axios.delete(
-      `${EVENTS_API}/${id}`
-    );
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
 
-    res.status(200).json({
-      message: "Event deleted successfully",
-    });
+    if (String(event.createdBy) !== String(req.body.userId)) {
+      return res.status(403).json({
+        message: "You can only delete your own events",
+      });
+    }
 
-  } catch (error) {
+    db.events = db.events.filter((e) => e.id !== req.params.id);
 
-    res.status(500).json({
-      message: "Failed to delete event",
-      error: error.message,
-    });
+    writeDB(db);
 
+    return res.json({ message: "Event deleted successfully" });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
 };
 
-
+// ======================================================
 // GET MY EVENTS
-export const getMyEvents = async (req, res) => {
-
+// ======================================================
+export const getMyEvents = (req, res) => {
   try {
+    const db = readDB();
 
-    const { userId } = req.params;
-
-    const response = await axios.get(EVENTS_API);
-
-    const myEvents = response.data.filter(
-      (event) =>
-        String(event.createdBy) === String(userId)
+    const myEvents = db.events.filter(
+      (e) => String(e.createdBy) === String(req.params.userId)
     );
 
-    res.status(200).json({
-      events: myEvents,
-    });
-
-  } catch (error) {
-
-    res.status(500).json({
-      message: "Failed to fetch user events",
-      error: error.message,
-    });
-
+    return res.json({ events: myEvents });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
 };
 
+// ======================================================
+// JOIN EVENT
+// ======================================================
+export const joinEvent = (req, res) => {
+  try {
+    const db = readDB();
+
+    const event = db.events.find((e) => e.id === req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const attendee = req.body;
+
+    const alreadyJoined = event.attendees.find(
+      (u) => String(u.id) === String(attendee.id)
+    );
+
+    if (alreadyJoined) {
+      return res.status(400).json({
+        message: "Already joined",
+      });
+    }
+
+    if (
+      Number(event.maxAttendees) > 0 &&
+      event.attendees.length >= Number(event.maxAttendees)
+    ) {
+      return res.status(400).json({
+        message: "Event full",
+      });
+    }
+
+    event.attendees.push(attendee);
+
+    writeDB(db);
+
+    return res.json({
+      message: "Joined event",
+      attendees: event.attendees,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+// ======================================================
+// LEAVE EVENT
+// ======================================================
+export const leaveEvent = (req, res) => {
+  try {
+    const db = readDB();
+
+    const event = db.events.find((e) => e.id === req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    event.attendees = event.attendees.filter(
+      (u) => String(u.id) !== String(req.body.userId)
+    );
+
+    writeDB(db);
+
+    return res.json({
+      message: "Left event",
+      attendees: event.attendees,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+// ======================================================
+// GET EVENT ATTENDEES (ONLY ORGANIZER)
+// ======================================================
+export const getEventAttendees = (req, res) => {
+  try {
+    const db = readDB();
+
+    const event = db.events.find((e) => e.id === req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (String(event.createdBy) !== String(req.query.organizerId)) {
+      return res.status(403).json({
+        message: "Only organizer can view attendees",
+      });
+    }
+
+    return res.json({
+      attendees: event.attendees || [],
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};

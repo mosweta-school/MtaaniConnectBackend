@@ -1,24 +1,20 @@
-// Handles what happens when requests come in.
-//Register and login
-
 import bcrypt from "bcryptjs";
+import { nanoid } from "nanoid";
+import { readDB, writeDB } from "../utils/db.js";
 import { generateToken } from "../utils/generateToken.js";
-import axios from "axios";
 
-let users = [];
 
+// ======================================================
+// REGISTER USER
+// ======================================================
 export const registerUser = async (req, res) => {
-  const { name, email, password, confirmPassword } = req.body;
-
   try {
+    const { name, email, password, confirmPassword } = req.body;
 
-    // GET USERS FROM db.json
-    const { data: users } = await axios.get(
-      "http://localhost:8000/users"
-    );
+    const db = readDB();
 
     // CHECK IF USER EXISTS
-    const userExists = users.find(
+    const userExists = db.users.find(
       (user) => user.email === email
     );
 
@@ -28,7 +24,7 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // CHECK PASSWORD MATCH
+    // PASSWORD VALIDATION
     if (password !== confirmPassword) {
       return res.status(400).json({
         message: "Passwords do not match",
@@ -39,52 +35,53 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // CREATE USER
-    const user = {
-      id: Date.now(),
+    const newUser = {
+      id: nanoid(),
       name,
       email,
       password: hashedPassword,
       role: "user",
+      isActive: "1",
+      createdAt: new Date().toISOString(),
     };
 
-    // SAVE TO db.json
-    await axios.post(
-      "http://localhost:8000/users",
-      user
-    );
+    // SAVE USER
+    db.users.push(newUser);
+    writeDB(db);
 
     // RESPONSE
     res.status(201).json({
       message: "User registered successfully",
-      token: generateToken(user),
+      token: generateToken(newUser),
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
       },
     });
 
   } catch (error) {
-
-    console.log(error);
-
     res.status(500).json({
-      message: "Server Error",
+      message: "Server error during registration",
+      error: error.message,
     });
   }
 };
 
+
+// ======================================================
+// LOGIN USER
+// ======================================================
 export const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    const { data: users } = await axios.get(
-      "http://localhost:8000/users"
-    );
+    const { email, password } = req.body;
 
-    const user = users.find(
-      (user) => user.email === email
+    const db = readDB();
+
+    // FIND USER
+    const user = db.users.find(
+      (u) => u.email === email
     );
 
     if (!user) {
@@ -93,6 +90,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
+    // CHECK PASSWORD
     const isMatch = await bcrypt.compare(
       password,
       user.password
@@ -104,6 +102,14 @@ export const loginUser = async (req, res) => {
       });
     }
 
+    // CHECK IF ACTIVE
+    if (user.isActive === "0") {
+      return res.status(403).json({
+        message: "Account disabled. Please contact admin at support@mtaaniconnect.com for more details.",
+      });
+    }
+
+    // SUCCESS RESPONSE
     res.status(200).json({
       message: "Login successful",
       token: generateToken(user),
@@ -114,9 +120,11 @@ export const loginUser = async (req, res) => {
         role: user.role,
       },
     });
+
   } catch (error) {
     res.status(500).json({
-      message: error.message,
+      message: "Login failed",
+      error: error.message,
     });
   }
 };
