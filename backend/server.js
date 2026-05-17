@@ -25,7 +25,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "https://mtaani-connect-nine.vercel.app",
+    origin: "*",
     credentials: true
   })
 );
