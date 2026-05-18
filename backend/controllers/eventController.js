@@ -160,12 +160,16 @@ export const deleteEvent = (req, res) => {
 };
 
 // ======================================================
-// GET MY EVENTS (FIXED)
+// GET MY EVENTS 
 // ======================================================
 export const getMyEvents = (req, res) => {
   try {
     const db = readDB();
-    const user = req.user; // Get user from auth middleware
+    const user = req.user;
+
+    if (!user || !user.id) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
 
     // Filter events by the authenticated user's ID
     const myEvents = db.events.filter(
@@ -174,6 +178,7 @@ export const getMyEvents = (req, res) => {
 
     return res.json({ events: myEvents });
   } catch (err) {
+    console.error("Get my events error:", err);
     return res.status(500).json({ message: err.message });
   }
 };
