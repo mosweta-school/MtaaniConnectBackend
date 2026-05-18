@@ -160,14 +160,16 @@ export const deleteEvent = (req, res) => {
 };
 
 // ======================================================
-// GET MY EVENTS
+// GET MY EVENTS (FIXED)
 // ======================================================
 export const getMyEvents = (req, res) => {
   try {
     const db = readDB();
+    const user = req.user; // Get user from auth middleware
 
+    // Filter events by the authenticated user's ID
     const myEvents = db.events.filter(
-      (e) => String(e.createdBy) === String(req.params.userId)
+      (e) => String(e.createdBy) === String(user.id)
     );
 
     return res.json({ events: myEvents });

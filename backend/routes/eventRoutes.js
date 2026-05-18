@@ -5,27 +5,27 @@ import {
   updateEvent,
   deleteEvent,
   getMyEvents,
-  getSingleEvent
+  getSingleEvent,
+  joinEvent,
+  leaveEvent,
+  getEventAttendees
 } from "../controllers/eventController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Public: get all events
+// Public routes
 router.get("/", getEvents);
-router.get("/", getSingleEvent);
+router.get("/:id", getSingleEvent); // Fixed: removed duplicate route
 
-// Protected: create event
+// Protected routes
 router.post("/", protect, createEvent);
-
-// Protected: user events
 router.get("/my-events", protect, getMyEvents);
-
-// Update event
 router.put("/:id", protect, updateEvent);
-
-// Delete event
 router.delete("/:id", protect, deleteEvent);
+router.post("/:id/join", protect, joinEvent);
+router.post("/:id/leave", protect, leaveEvent);
+router.get("/:id/attendees", protect, getEventAttendees);
 
 export default router;
