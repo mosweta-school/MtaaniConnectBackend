@@ -21,7 +21,8 @@ router.get("/:id", getSingleEvent); // Fixed: removed duplicate route
 
 // Protected routes
 router.post("/", protect, createEvent);
-router.get("/my-events", protect, getMyEvents);
+router.get("/my-events", getMyEvents);
+
 router.put("/:id", protect, updateEvent);
 router.delete("/:id", protect, deleteEvent);
 router.post("/:id/join", protect, joinEvent);
