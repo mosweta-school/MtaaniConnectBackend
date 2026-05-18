@@ -47,6 +47,9 @@ export const deleteUser = (req, res) => {
 
     writeDB(db);
 
+    const io = req.app.get("io");
+    io.emit("User-Deleted", response.data);
+
     res.json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete user" });
@@ -66,6 +69,9 @@ export const deleteEvent = (req, res) => {
     );
 
     writeDB(db);
+
+    const io = req.app.get("io");
+    io.emit("Event-Deleted", response.data);
 
     res.json({ message: "Event deleted successfully" });
   } catch (error) {

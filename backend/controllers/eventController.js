@@ -46,6 +46,8 @@ export const createEvent = (req, res) => {
 
     db.events.push(newEvent);
     writeDB(db);
+    const io = req.app.get("io");
+    io.emit("new-event", response.data);
 
     return res.status(201).json({
       message: "Event created successfully",
@@ -113,6 +115,8 @@ export const updateEvent = (req, res) => {
     };
 
     writeDB(db);
+    const io = req.app.get("io");
+    io.emit("Event-Updated", response.data);
 
     return res.json({
       message: "Event updated successfully",
@@ -145,6 +149,9 @@ export const deleteEvent = (req, res) => {
     db.events = db.events.filter((e) => e.id !== req.params.id);
 
     writeDB(db);
+
+    const io = req.app.get("io");
+    io.emit("Event-Deleted", response.data);
 
     return res.json({ message: "Event deleted successfully" });
   } catch (err) {
@@ -207,6 +214,9 @@ export const joinEvent = (req, res) => {
 
     writeDB(db);
 
+    const io = req.app.get("io");
+    io.emit("Attendee Joined", response.data);
+
     return res.json({
       message: "Joined event",
       attendees: event.attendees,
@@ -234,6 +244,9 @@ export const leaveEvent = (req, res) => {
     );
 
     writeDB(db);
+
+    const io = req.app.get("io");
+    io.emit("Attendee-Left", response.data);
 
     return res.json({
       message: "Left event",
