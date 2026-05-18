@@ -160,26 +160,36 @@ export const deleteEvent = (req, res) => {
 };
 
 // ======================================================
-// GET MY EVENTS 
+// GET MY EVENTS (FIXED)
 // ======================================================
 export const getMyEvents = (req, res) => {
   try {
     const db = readDB();
     const user = req.user;
-
+    
+    console.log("getMyEvents - User ID:", user?.id);
+    
     if (!user || !user.id) {
-      return res.status(401).json({ message: "User not authenticated" });
+      return res.status(401).json({ 
+        message: "User not authenticated" 
+      });
     }
-
-    // Filter events by the authenticated user's ID
+    
     const myEvents = db.events.filter(
-      (e) => String(e.createdBy) === String(user.id)
+      (event) => String(event.createdBy) === String(user.id)
     );
-
-    return res.json({ events: myEvents });
+    
+    console.log(`Found ${myEvents.length} events`);
+    
+    return res.status(200).json({ 
+      events: myEvents 
+    });
+    
   } catch (err) {
-    console.error("Get my events error:", err);
-    return res.status(500).json({ message: err.message });
+    console.error("Error in getMyEvents:", err);
+    return res.status(500).json({ 
+      message: err.message 
+    });
   }
 };
 
