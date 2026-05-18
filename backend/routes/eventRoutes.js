@@ -4,7 +4,8 @@ import {
   getEvents,
   updateEvent,
   deleteEvent,
-  getMyEvents
+  getMyEvents,
+  getSingleEvent
 } from "../controllers/eventController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -13,6 +14,7 @@ const router = express.Router();
 
 // Public: get all events
 router.get("/", getEvents);
+router.get("/", getSingleEvent);
 
 // Protected: create event
 router.post("/", protect, createEvent);
