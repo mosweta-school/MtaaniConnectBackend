@@ -164,3 +164,59 @@ export const getAdminStats = (req, res) => {
     });
   }
 };
+
+// ======================================================
+// TOGGLE USER ROLE
+// ======================================================
+export const toggleUserStatus = (req, res) => {
+  try {
+    const db = readDB();
+
+    const userIndex = db.users.findIndex(
+      (u) => String(u.id) === String(req.params.id)
+    );
+
+    if (userIndex === -1) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    db.users[userIndex].isActive = req.body.isActive;
+
+    writeDB(db);
+
+    const io = req.app.get("io");
+    io.emit("User-Status-Changed", db.users[userIndex]);
+
+    res.json(db.users[userIndex]);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update user status" });
+  }
+};
+
+// ======================================================
+// TOGGLE USER ACTIVE STATUS (ENABLE / DISABLE)
+// ======================================================
+export const toggleUserRole = (req, res) => {
+  try {
+    const db = readDB();
+
+    const userIndex = db.users.findIndex(
+      (u) => String(u.id) === String(req.params.id)
+    );
+
+    if (userIndex === -1) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    db.users[userIndex].role = req.body.role; 
+
+    writeDB(db);
+
+    const io = req.app.get("io");
+    io.emit("User-Updated", db.users[userIndex]);
+
+    res.json(db.users[userIndex]);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update user role" });
+  }
+};

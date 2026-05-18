@@ -5,6 +5,9 @@ import {
   deleteUser,
   deleteEvent,
   getAdminStats,
+  toggleUserRole,
+  toggleUserStatus
+  
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -18,5 +21,7 @@ router.get("/events", getAllEvents);
 
 router.delete("/users/:id", deleteUser);
 router.delete("/events/:id", deleteEvent);
+router.patch("/users/:id/role", toggleUserRole);
+router.patch("/users/:id/status", toggleUserStatus);
 
 export default router;
